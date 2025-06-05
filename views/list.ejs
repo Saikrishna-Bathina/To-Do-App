@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>To-Do List</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <button id="theme-toggle">🌓</button>
+
+  <div class="box">
+    <h1>To Do List</h1>
+    <input type="text" id="search-input" placeholder="Search tasks...">
+    <ul class="todo-list" id="todo-list">
+      <% for (var i = 0; i < exej.length; i++) { %>
+        <li class="todo-item">
+          <% if (editIndex === i) { %>
+            <form action="/edit" method="POST" class="edit-form">
+              <input type="hidden" name="index" value="<%= i %>" />
+              <input type="text" name="newTask" value="<%= exej[i] %>" required />
+              <button type="submit">✅</button>
+              <a href="/" class="cancel-edit">❌</a>
+            </form>
+          <% } else { %>
+            <span class="task-text"><%= exej[i] %></span>
+            <div class="task-buttons">
+              <form action="/delete" method="POST">
+                <input type="hidden" name="index" value="<%= i %>" />
+                <button type="submit" class="delete-btn">🗑️</button>
+              </form>
+              <form action="/edit-mode" method="POST">
+                <input type="hidden" name="index" value="<%= i %>" />
+                <button type="submit" class="edit-btn">✏️</button>
+              </form>
+            </div>
+          <% } %>
+        </li>
+      <% } %>
+    </ul>
+    <form class="add-form" action="/" method="POST">
+      <input type="text" name="ele1" placeholder="Enter a task..." required />
+      <button type="submit">+</button>
+    </form>
+    <button class="export-btn" onclick="exportToPDF()">🧾 Export to PDF</button>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 | To-Do App | SaiKrishnaBathina</p>
+  </footer>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    
+    document.getElementById("theme-toggle").onclick = () => {
+      document.body.classList.toggle("light-mode");
+    };
+
+    
+    document.getElementById("search-input").addEventListener("input", function () {
+      const val = this.value.toLowerCase();
+      document.querySelectorAll(".todo-item").forEach((li) => {
+        const txt = li.textContent.toLowerCase();
+        li.style.display = txt.includes(val) ? "flex" : "none";
+      });
+    });
+
+    
+    function showToast(msg, type) {
+      const toast = document.getElementById("toast");
+      toast.className = "toast show " + type;
+      toast.textContent = msg;
+      setTimeout(() => (toast.className = "toast"), 3000);
+    }
+
+    <% if (typeof toastMessage !== 'undefined' && toastMessage) { %>
+      window.addEventListener('DOMContentLoaded', () => {
+        showToast("<%- toastMessage.message %>", "<%- toastMessage.type %>");
+      });
+    <% } %>
+
+    
+    function exportToPDF() {
+      const text = Array.from(document.querySelectorAll(".task-text"))
+        .map(el => el.textContent)
+        .join("\n");
+      const blob = new Blob([text], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "tasks.pdf";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
